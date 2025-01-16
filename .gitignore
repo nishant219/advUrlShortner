@@ -1,0 +1,42 @@
+# Node.js modules
+node_modules/
+
+# Compiled TypeScript output
+dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment Variables
+.env
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+
+# Dependency management lock files (optional to ignore if using lock files)
+package-lock.json
+yarn.lock
+
+# Jest test coverage reports
+coverage/
+
+# Debugging output
+*.tsbuildinfo
+
+# Docker files
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Other temp files
+.tmp/
+*.tmp
