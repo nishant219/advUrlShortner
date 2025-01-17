@@ -16,6 +16,7 @@ export class RedisService {
   private constructor() {
     
     this.client = new Redis(config.redisUrl, {
+      password: config.redisPassword,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         return delay;
@@ -28,7 +29,7 @@ export class RedisService {
     });
 
     this.client.on('connect', () => {
-      logger.info('Connected to Redis');
+      logger.info('---> Connected to Redis');
     });
     
   }

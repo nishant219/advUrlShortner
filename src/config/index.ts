@@ -5,6 +5,7 @@ export const config = {
     port: process.env.PORT || 3000,
     mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/urlshortener',
     redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
+    redisPassword: process.env.REDIS_PASSWORD,
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     jwtSecret: process.env.JWT_SECRET || 'your-jwt-secret',

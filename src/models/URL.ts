@@ -17,8 +17,7 @@ const urlSchema = new mongoose.Schema<IURL>({
       },
       alias: {
         type: String,
-        required: true,
-        unique: true
+        required: true
       },
       topic: {
         type: String,
