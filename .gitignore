@@ -4,6 +4,9 @@ node_modules/
 # Compiled TypeScript output
 dist/
 
+# public folder
+public/
+
 # Logs
 logs/
 *.log
