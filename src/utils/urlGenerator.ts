@@ -15,8 +15,8 @@ export class UrlGenerator {
     // Create SHA-256 hash
     const hash = crypto.createHash('sha256').update(input).digest();
     
-    // Take first 6 bytes (48 bits) of hash
-    let num = BigInt('0x' + hash.slice(0, 6).toString('hex'));
+    // Take first 8 bytes (48 bits) of hash
+    let num = BigInt('0x' + hash.slice(0, 8).toString('hex'));
     
     // Convert to base62
     let alias = '';

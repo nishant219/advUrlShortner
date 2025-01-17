@@ -13,7 +13,7 @@ router.post(
 );
 
 router.get(
-  '/analytics/:alias',
+  '/analytics/alias/:alias',
   authMiddleware,
   UrlController.getUrlAnalytics
 );

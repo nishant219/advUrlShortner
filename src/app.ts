@@ -31,6 +31,16 @@ mongoose.connect(config.mongoUri)
   .then(() => logger.info('---> Connected to MongoDB'))
   .catch((error) => logger.error('MongoDB connection error:', error));
 
+// Health check endpoint
+app.get('/health', (req: express.Request, res: express.Response) => {
+  res.json({ status: 'UP' });
+});
+
+// 404 Error handling
+app.use((req: express.Request, res: express.Response) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
 // Error handling middleware
 app.use((err: Error | any, req: express.Request | any, res: express.Response | any, next: express.NextFunction | any) => {
   logger.error('Unhandled Error:', err);
