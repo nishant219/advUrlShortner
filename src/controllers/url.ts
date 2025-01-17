@@ -1,4 +1,3 @@
-// src/controllers/url.ts
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { UrlService } from '../services/url';
@@ -7,11 +6,17 @@ import { UAParser } from 'ua-parser-js';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger';
 import geoip from 'geoip-lite';
+import { validationResult } from 'express-validator';
 
 export class UrlController {
 
   static async createShortUrl(req: AuthRequest|any, res: Response|any) {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
       const userId = req?.user?._id;
       const url = await UrlService.createShortUrl(userId, req.body);
       
@@ -30,15 +35,21 @@ export class UrlController {
       });
     } catch (error: any) {
       logger.error('Create Short URL Error:', error);
-      res.status(400).json({ error: error.message });
+      
+      if (error.message === 'Invalid URL provided' || 
+          error.message === 'Invalid custom alias format' ||
+          error.message === 'Custom alias already exists') {
+        return res.status(400).json({ error: error.message });
+      }
+      
+      res.status(500).json({ error: 'Failed to create short URL' });
     }
   }
 
-  static async redirectUrl(req: Request|any, res: Response|any): Promise<any> {
+  static async redirectUrl(req: Request|any, res: Response|any) {
     try {
-      const { alias } = req?.params;
+      const { alias } = req.params;
       const longUrl = await UrlService.getLongUrl(alias);
-
       if (!longUrl) {
         return res.status(404).json({ error: 'URL not found' });
       }
@@ -48,7 +59,7 @@ export class UrlController {
       const os = parser.getOS();
       const device = parser.getDevice();
       // Get geolocation data
-      const ip = req.ip.replace('::ffff:', ''); // Handle IPv6 format
+      const ip = req.ip.replace('::ffff:', '');  // To Remove IPv6 prefix
       const geo = geoip.lookup(ip);
       // Create analytics entry
       const analytics = new Analytics({
@@ -65,16 +76,15 @@ export class UrlController {
         deviceType: device.type || 'desktop',
         uniqueVisitorId: req.cookies.visitorId || uuidv4()
       });
-
       // Set visitor cookie if not exists
       if (!req.cookies.visitorId) {
         res.cookie('visitorId', analytics.uniqueVisitorId, {
-          maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+          maxAge: 365 * 24 * 60 * 60 * 1000,
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production'
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
         });
       }
-
       // Save analytics asynchronously
       analytics.save().catch(err => {
         logger.error('Analytics Save Error:', err);
@@ -90,11 +100,11 @@ export class UrlController {
       res.redirect(longUrl);
     } catch (error) {
       logger.error('Redirect URL Error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Failed to redirect' });
     }
   }
 
-  static async getUrlAnalytics(req: AuthRequest| any, res: Response|any) {
+  static async getUrlAnalytics(req: AuthRequest|any, res: Response|any) {
     try {
       const { alias } = req.params;
       const analytics = await UrlService.getUrlAnalytics(alias);
@@ -104,44 +114,49 @@ export class UrlController {
         userId: req.user!._id
       });
 
-      res.json(analytics);
-    } catch (error:any) {
+      res.status(200).json(analytics);
+    } catch (error: any) {
       logger.error('Get URL Analytics Error:', error);
-      res.status(404).json({ error: error.message });
+      
+      if (error.message === 'URL not found') {
+        return res.status(404).json({ error: error.message });
+      }
+      
+      res.status(500).json({ error: 'Failed to retrieve analytics' });
     }
   }
 
-  static async getTopicAnalytics(req: AuthRequest, res: Response) {
+  static async getTopicAnalytics(req: AuthRequest|any, res: Response|any) {
     try {
       const { topic } = req.params;
-      const userId = req.user!._id;
-      const analytics = await UrlService.getTopicAnalytics(userId, topic);
-
+      const analytics = await UrlService.getTopicAnalytics(topic);
+      
       logger.info('Topic Analytics Retrieved', {
         topic,
-        userId
+        userId: req.user!._id
       });
 
-      res.json(analytics);
+      res.status(200).json(analytics);
     } catch (error: any) {
       logger.error('Get Topic Analytics Error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Failed to retrieve analytics' });
     }
   }
 
-  static async getOverallAnalytics(req: AuthRequest, res: Response) {
+  static async getOverallAnalytics(req: AuthRequest|any, res: Response|any) {
     try {
       const userId = req.user!._id;
       const analytics = await UrlService.getOverallAnalytics(userId);
-
+      
       logger.info('Overall Analytics Retrieved', {
-        userId
+        userId: req.user!._id
       });
 
-      res.json(analytics);
-    } catch (error:any) {
+      res.status(200).json(analytics);
+    } catch (error: any) {
       logger.error('Get Overall Analytics Error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Failed to retrieve analytics' });
     }
   }
+
 }
