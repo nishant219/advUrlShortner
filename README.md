@@ -82,6 +82,7 @@ Edit the `.env` file with your configuration:
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/urlshortener
 REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=test
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 JWT_SECRET=your-jwt-secret
