@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { UrlService } from '../services/url';
 import { Analytics } from '../models/Analytics';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger';
 import geoip from 'geoip-lite';
@@ -43,7 +43,8 @@ export class UrlController {
         return res.status(404).json({ error: 'URL not found' });
       }
       // Parse user agent
-      const parser = new UAParser(req.headers['user-agent']);
+      const parser = new UAParser();
+      parser.setUA(req.headers['user-agent']);      
       const os = parser.getOS();
       const device = parser.getDevice();
       // Get geolocation data
